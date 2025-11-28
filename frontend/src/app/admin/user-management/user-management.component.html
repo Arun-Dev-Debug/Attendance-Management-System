@@ -1,0 +1,126 @@
+<div class="admin-wrapper fade-in">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <svg width="40" height="40" viewBox="0 0 50 50" fill="none">
+                <circle cx="25" cy="25" r="23" stroke="white" stroke-width="3" />
+                <path d="M25 15v20M15 25h20" stroke="white" stroke-width="3" stroke-linecap="round" />
+            </svg>
+            <span>User Management</span>
+        </div>
+        <button routerLink="/admin/dashboard" class="btn-back">
+            ← Back to Dashboard
+        </button>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>User Management</h1>
+            <p class="subtitle">Manage user registrations and permissions</p>
+        </div>
+
+        <div class="filters-card">
+            <h3>Filters</h3>
+            <div class="filters-grid">
+                <div class="form-group">
+                    <label>Role</label>
+                    <select [(ngModel)]="filters.role" (change)="applyFilters()">
+                        <option value="">All Roles</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="TEACHER">Teacher</option>
+                        <option value="STUDENT">Student</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status</label>
+                    <select [(ngModel)]="filters.status" (change)="applyFilters()">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Search</label>
+                    <input type="text" [(ngModel)]="filters.search" (keyup.enter)="applyFilters()"
+                        placeholder="Search by name or email..." />
+                </div>
+
+                <div class="form-actions">
+                    <button (click)="applyFilters()" class="btn-primary">Apply</button>
+                    <button (click)="clearFilters()" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+        </div>
+
+        <div *ngIf="loading" class="loading">
+            <p>Loading users...</p>
+        </div>
+
+        <div *ngIf="!loading && users.length === 0" class="no-data">
+            <p>No users found</p>
+        </div>
+
+        <div *ngIf="!loading && users.length > 0" class="users-table-wrapper">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let user of users">
+                        <td>{{ user.name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="role-badge" [ngClass]="getRoleBadgeClass(user.role)">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge" [ngClass]="getStatusClass(user.status)">
+                                {{ user.status }}
+                            </span>
+                        </td>
+                        <td>{{ user.createdAt | date:'short' }}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button *ngIf="user.status === 'pending'" (click)="approveUser(user.id)"
+                                    class="btn-approve" title="Approve">
+                                    ✓
+                                </button>
+                                <button *ngIf="user.status === 'pending'" (click)="rejectUser(user.id)"
+                                    class="btn-reject" title="Reject">
+                                    ✗
+                                </button>
+                                <button *ngIf="user.status === 'approved'" (click)="deactivateUser(user.id)"
+                                    class="btn-deactivate" title="Deactivate">
+                                    🚫
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination" *ngIf="meta">
+                <button (click)="prevPage()" [disabled]="filters.page === 1" class="btn-page">
+                    Previous
+                </button>
+                <span class="page-info">
+                    Page {{ filters.page }} of {{ meta.totalPages }} ({{ meta.total }} total)
+                </span>
+                <button (click)="nextPage()" [disabled]="filters.page === meta.totalPages" class="btn-page">
+                    Next
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

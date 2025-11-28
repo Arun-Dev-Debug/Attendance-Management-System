@@ -1,0 +1,172 @@
+<div class="admin-wrapper fade-in">
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <svg width="40" height="40" viewBox="0 0 50 50" fill="none">
+                <circle cx="25" cy="25" r="23" stroke="white" stroke-width="3" />
+                <path d="M25 15v20M15 25h20" stroke="white" stroke-width="3" stroke-linecap="round" />
+            </svg>
+            <span>Course Management</span>
+        </div>
+        <button routerLink="/admin/dashboard" class="btn-back">
+            ← Back to Dashboard
+        </button>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>Course Management</h1>
+            <p class="subtitle">Create and manage courses</p>
+            <button (click)="openCreateForm()" class="btn-create">
+                + Create New Course
+            </button>
+        </div>
+
+        <div *ngIf="loading" class="loading">
+            <p>Loading courses...</p>
+        </div>
+
+        <div *ngIf="!loading && courses.length === 0" class="no-data">
+            <p>No courses found. Create your first course!</p>
+        </div>
+
+        <div *ngIf="!loading && courses.length > 0" class="courses-grid">
+            <div *ngFor="let course of courses" class="course-card">
+                <div class="course-header">
+                    <h3>{{ course.name }}</h3>
+                    <span class="course-badge" [class.online]="course.isOnline">
+                        {{ course.isOnline ? 'Online' : 'Offline' }}
+                    </span>
+                </div>
+
+                <p class="course-subject">{{ course.subject }}</p>
+                <p class="course-description">{{ course.description || 'No description' }}</p>
+
+                <div class="course-meta">
+                    <div class="meta-item">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path
+                                d="M11 5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm.256 7a4.474 4.474 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10c.26 0 .507.009.740.025.226-.341.496-.65.804-.918C9.077 9.038 8.564 9 8 9c-5 0-6 3-6 4s1 1 1 1h5.256Z" />
+                            <path
+                                d="M16 12.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Zm-1.993-1.679a.5.5 0 0 0-.686.172l-1.17 1.95-.547-.547a.5.5 0 0 0-.708.708l.774.773a.75.75 0 0 0 1.174-.144l1.335-2.226a.5.5 0 0 0-.172-.686Z" />
+                        </svg>
+                        <span>{{ course._count?.enrollments || 0 }} students</span>
+                    </div>
+                    <div class="meta-item" *ngIf="course.teacher">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path
+                                d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z" />
+                        </svg>
+                        <span>{{ course.teacher.name }}</span>
+                    </div>
+                </div>
+
+                <div class="course-actions">
+                    <button (click)="openEnrollForm(course)" class="btn-enroll">
+                        Enroll Student
+                    </button>
+                    <button (click)="deleteCourse(course.id)" class="btn-delete">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Course Modal -->
+    <div *ngIf="showCreateForm" class="modal-overlay" (click)="closeCreateForm()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Create New Course</h2>
+                <button (click)="closeCreateForm()" class="btn-close">×</button>
+            </div>
+
+            <form (ngSubmit)="createCourse()" class="course-form">
+                <div class="form-group">
+                    <label>Course Name *</label>
+                    <input type="text" [(ngModel)]="courseForm.name" name="name" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Course Code *</label>
+                    <input type="text" [(ngModel)]="courseForm.code" name="code" required placeholder="e.g., MATH101" />
+                </div>
+
+                <div class="form-group">
+                    <label>Subject *</label>
+                    <input type="text" [(ngModel)]="courseForm.subject" name="subject" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea [(ngModel)]="courseForm.description" name="description" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Teacher</label>
+                    <select [(ngModel)]="courseForm.teacherId" name="teacherId">
+                        <option value="">Select Teacher</option>
+                        <option *ngFor="let teacher of teachers" [value]="teacher.id">
+                            {{ teacher.name }}
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" [(ngModel)]="courseForm.startDate" name="startDate" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" [(ngModel)]="courseForm.endDate" name="endDate" />
+                    </div>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <label>
+                        <input type="checkbox" [(ngModel)]="courseForm.isOnline" name="isOnline" />
+                        Online Course
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Create Course</button>
+                    <button type="button" (click)="closeCreateForm()" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Enroll Student Modal -->
+    <div *ngIf="showEnrollForm" class="modal-overlay" (click)="closeEnrollForm()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Enroll Student</h2>
+                <button (click)="closeEnrollForm()" class="btn-close">×</button>
+            </div>
+
+            <div class="enroll-info" *ngIf="selectedCourse">
+                <p><strong>Course:</strong> {{ selectedCourse.name }}</p>
+                <p><strong>Subject:</strong> {{ selectedCourse.subject }}</p>
+            </div>
+
+            <form (ngSubmit)="enrollStudent()" class="enroll-form">
+                <div class="form-group">
+                    <label>Select Student *</label>
+                    <select [(ngModel)]="enrollForm.studentId" name="studentId" required>
+                        <option value="">Choose a student</option>
+                        <option *ngFor="let student of students" [value]="student.id">
+                            {{ student.name }} ({{ student.email }})
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Enroll Student</button>
+                    <button type="button" (click)="closeEnrollForm()" class="btn-secondary">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
