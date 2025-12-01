@@ -26,8 +26,8 @@ staticSites:
         source: /*
         destination: /index.html
 
-# databases:
-#   - name: attendance-db
-#     databaseName: attendance_db
-#     user: attendance_user
-#     plan: free # Optional: Remove if you want a paid plan
+databases:
+  - name: attendance-db
+    databaseName: attendance_db
+    user: attendance_user
+    plan: free # Optional: Remove if you want a paid plan
